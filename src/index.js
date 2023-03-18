@@ -153,7 +153,8 @@ const LinkedList = () => {
 
         // insert at the start of the list.
         if (index === 0) {
-            prepend(value);
+            // List size gets updated by prepend
+            prepend(value); 
             return;
         }
 
@@ -170,7 +171,38 @@ const LinkedList = () => {
             newNode.next = previousNode.next;
             previousNode.next = newNode;
         }
+        listSize += 1;
     }
+
+    // This internal function is used to remove the node
+    // at the specified location and returns the node
+    // containing the removed value. To obtain the value
+    // directly, use removeAt().
+    const removeNodeAt = (index) => {
+        let removedNode = null;
+        let previousNode = null;
+        // start of the list
+        if (index === 0) {
+            removedNode = head;
+            head = head.next;
+        } else if (index === size() - 1) {
+            // end of the list
+            removedNode = pop();
+        } else {
+            // any other position in the list
+            previousNode = nodeAt(index - 1);
+            // store the node to remove
+            removedNode = previousNode.next;
+            // to get past the node to remove, call next twice
+            // on the previous node to get to the next node.
+            previousNode.next = previousNode.next.next;
+        }
+        // update list size
+        listSize -= 1;
+        return removedNode;
+    }
+
+    const removeAt = (index) => removeNodeAt(index).getValue();
 
     /**
      * This function returns a string representation of the linked list.
@@ -199,6 +231,7 @@ const LinkedList = () => {
         contains,
         find,
         insertAt,
+        removeAt,
         toString,
     };
 }
@@ -223,3 +256,5 @@ console.log(linkedList.toString());
 console.log(`Find World: ${linkedList.find('World')}`);
 linkedList.insertAt('Pocahontas',2);
 console.log(`After inserting at 2: ${linkedList.toString()}`);
+linkedList.removeAt(3);
+console.log(`After removing at 3: ${linkedList.toString()}`);
