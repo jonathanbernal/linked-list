@@ -8,6 +8,9 @@ const Node = (value = null, next = null) => {
 const LinkedList = () => {
     let head = null;
     let tail = null;
+    // We keep track of the size to avoid a costly
+    // size() operation. This makes it O(1).
+    let listSize = 0;
 
     const getHead = () => head;
     const getTail = () => tail;
@@ -26,6 +29,7 @@ const LinkedList = () => {
             tail.next = newNode;
             tail = newNode;
         }
+        listSize += 1;
     }
 
     /**
@@ -37,40 +41,25 @@ const LinkedList = () => {
         // to an empty linked list.
         if(head === null) {
             append(value);
+            listSize += 1;
             return;
         }
         let newNode = Node(value);
         newNode.next = head;
         head = newNode;
+        listSize += 1;
     }
 
     /**
      * This function returns the number of items in the list.
      * @returns The size of the list
      */
-    const size = () => {
-        let current = head;
-        let listSize = 0;
+    const size = () => listSize;
 
-        // In this implementation, our method takes O(N) to get
-        // the size of the list. This was done for experimentation
-        // purposes. The best approach to getting the size of the
-        // list is to declare a counter and update it every time
-        // an item is added or removed from the list.
-        while(current !== null) {
-            listSize += 1;
-            current = current.next;
-        }
-
-        return listSize;
-    }
-
-    /**
-     * This function returns the Node value at the listed index.
-     * @param {*} index the index of the linked list to retrieve
-     * @returns the node value at the specified index.
-     */
-    const at = (index) => {
+    // This internal function returns the node at the location.
+    // Users should only be able to see the data in the node.
+    // at() is used for that purpose.
+    const nodeAt = (index) => {
         let current = head;
         let currentIndex = 0;
 
@@ -80,13 +69,20 @@ const LinkedList = () => {
 
         while(current !== null) {
             if(currentIndex === index) {
-                return current.getValue();
+                return current;
             } else {
                 currentIndex += 1;
                 current = current.next;
             }
         }
     }
+
+    /**
+     * This function returns the Node value at the listed index.
+     * @param {*} index the index of the linked list to retrieve
+     * @returns the node value at the specified index.
+     */
+    const at = (index) => nodeAt(index).getValue();
 
     /**
      * This function removes the last element in the list.
@@ -106,6 +102,7 @@ const LinkedList = () => {
 
         tail = current;
         current.next = null;
+        listSize -= 1;
 
         return nodeToPop.getValue();
     }
@@ -149,6 +146,32 @@ const LinkedList = () => {
         return null; // The value does not exist in the list.
     }
 
+    const insertAt = (value, index) => {
+        // Used by the last two cases since we need a reference
+        // to the node before the index node.
+        let previousNode = null;
+
+        // insert at the start of the list.
+        if (index === 0) {
+            prepend(value);
+            return;
+        }
+
+        let newNode = Node(value);
+
+        // Appending at the tail location does not change the tail.
+        if (index === size() - 1) {
+            // Grab the node before the target node.
+            previousNode = nodeAt(index);
+            newNode.next = tail;
+            previousNode.next = newNode;
+        } else { // insert elsewhere based on index
+            previousNode = nodeAt(index - 1);
+            newNode.next = previousNode.next;
+            previousNode.next = newNode;
+        }
+    }
+
     /**
      * This function returns a string representation of the linked list.
      * @returns the string representing the items in the linked list.
@@ -175,6 +198,7 @@ const LinkedList = () => {
         pop,
         contains,
         find,
+        insertAt,
         toString,
     };
 }
@@ -193,7 +217,9 @@ console.log(`List size: ${linkedList.size()}`);
 console.log(`At: (3): ${linkedList.at(3)}`);
 console.log(`Popped value: ${linkedList.pop()}`);
 console.log(linkedList.toString());
-console.log(`Contains Disney? ${linkedList.contains('disney')}`);
+console.log(`Contains Disney? ${linkedList.contains('Disney')}`);
 linkedList.append('Yoshi');
 console.log(linkedList.toString());
 console.log(`Find World: ${linkedList.find('World')}`);
+linkedList.insertAt('Pocahontas',2);
+console.log(`After inserting at 2: ${linkedList.toString()}`);
